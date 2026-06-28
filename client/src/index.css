@@ -1,0 +1,283 @@
+/* ─── Corporate Design System ─────────────────────────────────── */
+:root {
+  --corp-olive: #4E5944;
+  --corp-olive-dark: #3a4333;
+  --corp-olive-light: #6a7560;
+  --corp-bg: #E2E2E2;
+  --corp-surface: #FFFFFF;
+  --corp-raised: #F5F5F5;
+  --corp-border: #C8C8C8;
+  --corp-divider: #D0D0D0;
+  --corp-text: #2C2C2C;
+  --corp-muted: #6B6B6B;
+  --corp-shadow: 0 2px 8px rgba(0, 0, 0, 0.10), 0 1px 3px rgba(0, 0, 0, 0.06);
+  --corp-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08);
+  /* keep terminal vars for any residual component refs */
+  --terminal-bg: #E2E2E2;
+  --terminal-surface: #FFFFFF;
+  --terminal-raised: #F5F5F5;
+  --terminal-border: #C8C8C8;
+  --accent-primary: #4E5944;
+  --text-primary: #2C2C2C;
+  --text-secondary: #6B6B6B;
+  --text-muted: #999999;
+}
+
+/* ─── Reset ─────────────────────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+  background-color: var(--corp-bg);
+  color: var(--corp-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #D8D8D8;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #A0A0A0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #7A7A7A;
+}
+
+/* ─── Typography helpers ─────────────────────────────────────────── */
+.corp-serif {
+  font-family: "Times New Roman", Times, Georgia, serif;
+}
+
+.corp-sans {
+  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+}
+
+.corp-mono {
+  font-family: "Courier New", Courier, monospace;
+}
+
+/* ─── Section label ─────────────────────────────────────────────── */
+.corp-section-label {
+  font-family: Arial, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--corp-muted);
+}
+
+/* ─── Card ──────────────────────────────────────────────────────── */
+.corp-card {
+  background: var(--corp-surface);
+  border: 1px solid var(--corp-border);
+  box-shadow: var(--corp-shadow);
+}
+
+.corp-card:hover {
+  box-shadow: var(--corp-shadow-md);
+}
+
+/* ─── Header / Footer bar ───────────────────────────────────────── */
+.corp-header {
+  background-color: var(--corp-olive);
+  color: #FFFFFF;
+}
+
+/* ─── Buttons ───────────────────────────────────────────────────── */
+.corp-btn-primary {
+  background-color: var(--corp-olive);
+  color: #FFFFFF;
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid var(--corp-olive-dark);
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.corp-btn-primary:hover:not(:disabled) {
+  background-color: var(--corp-olive-dark);
+}
+
+.corp-btn-primary:disabled {
+  background-color: #A0A0A0;
+  border-color: #888;
+  cursor: not-allowed;
+}
+
+.corp-btn-gray {
+  background-color: #DCDCDC;
+  color: var(--corp-text);
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  border: 1px solid var(--corp-border);
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.corp-btn-gray:hover {
+  background-color: #CBCBCB;
+}
+
+.corp-btn-outline {
+  background: transparent;
+  color: #FFFFFF;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  padding: 5px 14px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.corp-btn-outline:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+/* ─── Progress bar ──────────────────────────────────────────────── */
+.progress-bar-top {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 100;
+  background: var(--corp-olive);
+  animation: corp-progress 2s ease-in-out infinite;
+}
+
+@keyframes corp-progress {
+  0% {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+
+  50% {
+    transform: scaleX(0.7);
+    transform-origin: left;
+  }
+
+  100% {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+}
+
+/* ─── Gradient text (remapped to olive) ─────────────────────────── */
+.gradient-text {
+  color: var(--corp-olive);
+  font-family: "Times New Roman", Times, Georgia, serif;
+}
+
+/* ─── Input ─────────────────────────────────────────────────────── */
+.input-glow:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--corp-olive);
+  border-color: var(--corp-olive) !important;
+}
+
+/* ─── Navbar gradient border (repurposed as bottom divider) ─────── */
+.navbar-gradient-border {
+  border-bottom: 2px solid var(--corp-olive-dark);
+}
+
+/* ─── Idle hero layout ──────────────────────────────────────────── */
+.idle-orbs {
+  display: none;
+  /* removed in corporate theme */
+}
+
+/* ─── Verdict pulse (subtle shadow on reveal) ───────────────────── */
+@keyframes verdict-pulse {
+  0% {
+    box-shadow: var(--corp-shadow);
+  }
+
+  50% {
+    box-shadow: var(--corp-shadow-md);
+  }
+
+  100% {
+    box-shadow: var(--corp-shadow);
+  }
+}
+
+.verdict-pulse {
+  animation: verdict-pulse 0.6s ease-out 1;
+}
+
+/* ─── Scanline overlay (disabled) ──────────────────────────────── */
+.scanline-overlay {
+  display: none;
+}
+
+/* ─── Terminal cursor (kept for ReasoningTrace) ─────────────────── */
+.terminal-cursor::after {
+  content: "▋";
+  animation: blink 1s step-end infinite;
+  color: var(--corp-olive);
+  margin-left: 2px;
+}
+
+/* ─── Horizontal divider ────────────────────────────────────────── */
+.corp-divider {
+  width: 1px;
+  background: var(--corp-divider);
+  align-self: stretch;
+  margin: 0 32px;
+}
+
+/* ─── Table ─────────────────────────────────────────────────────── */
+.corp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+}
+
+.corp-table th {
+  background: var(--corp-raised);
+  border-bottom: 2px solid var(--corp-border);
+  padding: 10px 16px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--corp-muted);
+}
+
+.corp-table td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--corp-divider);
+  color: var(--corp-text);
+}
+
+.corp-table tr:last-child td {
+  border-bottom: none;
+}
+
+.corp-table tr:nth-child(even) td {
+  background: #FAFAFA;
+}
