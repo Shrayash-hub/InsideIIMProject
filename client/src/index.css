@@ -281,3 +281,17 @@ body {
 .corp-table tr:nth-child(even) td {
   background: #FAFAFA;
 }
+
+/* ─── Print Styles ──────────────────────────────────────────────── */
+@media print {
+  body {
+    background: #FFFFFF !important;
+  }
+  .no-print, header, footer {
+    display: none !important;
+  }
+  .corp-card, .verdict-pulse {
+    box-shadow: none !important;
+    border: 1px solid #C8C8C8 !important;
+  }
+}

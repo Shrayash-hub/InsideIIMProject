@@ -1,7 +1,9 @@
 import { motion } from "framer-motion";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, BookMarked } from "lucide-react";
 import { useState } from "react";
 import { RadialBarChart, RadialBar, PolarAngleAxis, ResponsiveContainer } from "recharts";
+import { useWatchlist } from "../hooks/useWatchlist.js";
+import { useAuth } from "../context/AuthContext.jsx";
 import { cn } from "../lib/utils.js";
 import { useCountUp } from "../hooks/useCountUp.js";
 
@@ -34,11 +36,20 @@ const VERDICT_CONFIG = {
 
 export default function VerdictCard({ report }) {
   const [copied, setCopied] = useState(false);
+  const [saving, setSaving] = useState(false);
+  
+  const { addToWatchlist, watchlist } = useWatchlist();
+  const { currentUser } = useAuth();
 
   if (!report) return null;
 
   const { verdict, confidenceScore, reasoning, companyName, ticker, exchange } = report;
   const config = VERDICT_CONFIG[verdict] ?? VERDICT_CONFIG.WATCH;
+
+  const isSaved = watchlist.some((item) => 
+    (ticker && item.ticker === ticker) || 
+    item.companyName === companyName
+  );
 
   const animatedScore = useCountUp({
     end: confidenceScore ?? 0,
@@ -60,7 +71,7 @@ export default function VerdictCard({ report }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      style={{ maxWidth: 1100, margin: "0 auto 24px", padding: "0 24px" }}
+      style={{ width: "100%", maxWidth: "100%", margin: "0 auto 24px", padding: 0, boxSizing: "border-box" }}
     >
       <div
         className="verdict-pulse"
@@ -96,14 +107,41 @@ export default function VerdictCard({ report }) {
             <p style={{ fontFamily: "Times New Roman, Times, serif", fontSize: 15, color: "#4A4A4A", lineHeight: 1.75, fontStyle: "italic", margin: "0 0 16px" }}>
               {reasoning}
             </p>
-            <button
-              onClick={handleCopy}
-              className="corp-btn-gray"
-              style={{ display: "flex", alignItems: "center", gap: 6 }}
-            >
-              {copied ? <Check style={{ width: 13, height: 13 }} /> : <Copy style={{ width: 13, height: 13 }} />}
-              {copied ? "Copied!" : "Copy Summary"}
-            </button>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <button
+                onClick={handleCopy}
+                className="corp-btn-gray"
+                style={{ display: "flex", alignItems: "center", gap: 6 }}
+              >
+                {copied ? <Check style={{ width: 13, height: 13 }} /> : <Copy style={{ width: 13, height: 13 }} />}
+                {copied ? "Copied!" : "Copy Summary"}
+              </button>
+              
+              {currentUser && (
+                <button
+                  onClick={async () => {
+                    if (isSaved || saving) return;
+                    setSaving(true);
+                    await addToWatchlist(report);
+                    setSaving(false);
+                  }}
+                  disabled={isSaved || saving}
+                  className="corp-btn-outline"
+                  style={{ 
+                    display: "flex", 
+                    alignItems: "center", 
+                    gap: 6,
+                    color: isSaved ? "#6B6B6B" : "#4E5944",
+                    borderColor: isSaved ? "#D0D0D0" : "#4E5944",
+                    background: isSaved ? "#FAFAFA" : "transparent",
+                    cursor: isSaved ? "default" : "pointer"
+                  }}
+                >
+                  {isSaved ? <Check style={{ width: 13, height: 13 }} /> : <BookMarked style={{ width: 13, height: 13 }} />}
+                  {isSaved ? "Saved to Watchlist" : saving ? "Saving..." : "Save to Watchlist"}
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Right — confidence ring */}

@@ -1,6 +1,9 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { RotateCcw, AlertCircle, TrendingUp, FileText, BarChart3, Users, Brain, Shield, Zap, Globe, CheckCircle } from "lucide-react";
+import { RotateCcw, AlertCircle, TrendingUp, FileText, BarChart3, Users, Brain, Shield, Zap, Globe, CheckCircle, BookMarked, Download, Loader2 } from "lucide-react";
+import html2pdf from "html2pdf.js";
+import { useAuth } from "../context/AuthContext.jsx";
 import SearchBar from "../components/SearchBar.jsx";
 import AgentProgress from "../components/AgentProgress.jsx";
 import VerdictCard from "../components/VerdictCard.jsx";
@@ -62,8 +65,53 @@ const sans = (sz, color = "#4A4A4A") => ({ fontFamily: "Arial, sans-serif", font
 
 export default function Home() {
   const { state, reset, startResearch } = useResearch();
+  const { currentUser } = useAuth();
   const { status, report } = state;
   const isIdle = status === "idle";
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownloadPDF = async () => {
+    if (downloading || !report) return;
+    setDownloading(true);
+    
+    try {
+      const element = document.getElementById("pdf-report-content") ?? document.getElementById("pdf-report-container");
+      
+      // Temporarily set width to print-friendly layout for the selected content
+      const origWidth = element.style.width;
+      const origMaxWidth = element.style.maxWidth;
+      const origMargin = element.style.margin;
+      element.style.width = "1100px";
+      element.style.maxWidth = "1100px";
+      element.style.margin = "0 auto";
+      
+      const opt = {
+        margin:       [8, 8, 8, 8],
+        filename:     `${report.ticker || report.companyName || 'Research'}_Report.pdf`,
+        image:        { type: 'jpeg', quality: 1.0 },
+        html2canvas:  { 
+          scale: 2, 
+          useCORS: true, 
+          letterRendering: true, 
+          backgroundColor: '#FFFFFF',
+          windowWidth: 1100
+        },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak:    { mode: 'avoid-all' }
+      };
+
+      await html2pdf().set(opt).from(element).save();
+      
+      // Restore styles
+      element.style.width = origWidth;
+      element.style.maxWidth = origMaxWidth;
+      element.style.margin = origMargin;
+    } catch (error) {
+      console.error("PDF generation failed:", error);
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   return (
     <div style={{ minHeight: "100vh", background: "#E2E2E2", display: "flex", flexDirection: "column" }}>
@@ -81,16 +129,44 @@ export default function Home() {
               <p style={{ ...sans(11, "rgba(255,255,255,0.8)"), textTransform: "uppercase", letterSpacing: "0.13em", marginTop: 4 }}>AI Research Intelligence Agent</p>
             </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
-            <nav style={{ display: "flex", alignItems: "center", gap: 24 }}>
-              {["Platform", "Coverage", "Research"].map(n => (
-                <span key={n} style={{ ...sans(12, "rgba(255,255,255,0.9)"), textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 700, cursor: "default" }}>{n}</span>
-              ))}
-            </nav>
+          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+            {status === "complete" && (
+              <button 
+                onClick={handleDownloadPDF} 
+                disabled={downloading}
+                className="corp-btn-outline no-print" 
+                style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 18px", color: "#4E5944", borderColor: "#4E5944", background: "#FFFFFF", opacity: downloading ? 0.7 : 1, cursor: downloading ? "wait" : "pointer" }}
+              >
+                {downloading ? <Loader2 style={{ width: 14, height: 14, animation: "spin 1s linear infinite" }} /> : <Download style={{ width: 14, height: 14 }} />}
+                {downloading ? "Generating PDF..." : "Download PDF"}
+              </button>
+            )}
             {status !== "idle" && (
-              <button onClick={reset} className="corp-btn-outline" style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 18px" }}>
+              <button onClick={reset} className="corp-btn-outline no-print" style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 18px" }}>
                 <RotateCcw style={{ width: 14, height: 14 }} /> New Research
               </button>
+            )}
+            {currentUser ? (
+              /* Logged-in user area */
+              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                <Link to="/watchlist" style={{ display: "flex", alignItems: "center", gap: 6, ...sans(12, "rgba(255,255,255,0.85)"), textDecoration: "none", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                  <BookMarked style={{ width: 14, height: 14 }} /> Watchlist
+                </Link>
+                <Link to="/settings" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
+                  <div style={{ width: 34, height: 34, borderRadius: "50%", background: "rgba(255,255,255,0.2)", border: "1px solid rgba(255,255,255,0.4)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <span style={{ fontFamily: "Arial, sans-serif", fontSize: 12, fontWeight: 700, color: "#fff" }}>
+                      {(currentUser.name ?? currentUser.email ?? "U").split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+                    </span>
+                  </div>
+                  <span style={{ ...sans(12, "rgba(255,255,255,0.85)"), fontWeight: 600 }}>{currentUser.name?.split(" ")[0] ?? currentUser.email}</span>
+                </Link>
+              </div>
+            ) : (
+              /* Logged-out area */
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <Link to="/login" className="corp-btn-outline" style={{ padding: "7px 16px", textDecoration: "none", fontSize: 12 }}>Sign In</Link>
+                <Link to="/signup" style={{ background: "rgba(255,255,255,0.15)", color: "#fff", fontFamily: "Arial, sans-serif", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", border: "1px solid rgba(255,255,255,0.5)", padding: "7px 16px", textDecoration: "none", transition: "background 0.15s" }}>Sign Up</Link>
+              </div>
             )}
           </div>
         </div>
@@ -264,17 +340,23 @@ export default function Home() {
           {/* ── COMPLETE ── */}
           {status === "complete" && report && (
             <motion.div key="complete" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ padding: "32px 0" }}>
-              <div style={{ maxWidth: 760, margin: "0 auto 24px", padding: "0 24px" }}><SearchBar compact /></div>
-              <AgentProgress />
-              <VerdictCard report={report} />
-              <KeyInsightsPanel financialData={report.financialData} sentimentScore={report.sentimentScore} riskFactors={report.riskFactors} positiveFactors={report.positiveFactors} />
-              <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 48px", display: "grid", gridTemplateColumns: "1fr 340px", gap: 24 }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                  {(report.reportSections ?? []).map((s, i) => <ReportSection key={s.id} section={s} index={i} />)}
+              <div className="no-print" style={{ maxWidth: 760, margin: "0 auto 24px", padding: "0 24px" }}><SearchBar compact /></div>
+              <div className="no-print"><AgentProgress /></div>
+              
+              <div id="pdf-report-container" style={{ background: "#E2E2E2", paddingTop: 16, paddingBottom: 16, display: "flex", justifyContent: "center" }}>
+                <div id="pdf-report-content" style={{ width: "100%", maxWidth: 1100, margin: "0 auto", background: "#FFFFFF", padding: "24px", boxSizing: "border-box" }}>
+                  <VerdictCard report={report} />
+                  <KeyInsightsPanel financialData={report.financialData} sentimentScore={report.sentimentScore} riskFactors={report.riskFactors} positiveFactors={report.positiveFactors} />
+                  <div style={{ width: "100%", maxWidth: 1100, margin: "0 auto", padding: "0", display: "grid", gridTemplateColumns: "1fr 320px", gap: 24, boxSizing: "border-box" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                      {(report.reportSections ?? []).map((s, i) => <ReportSection key={s.id} section={s} index={i} />)}
+                    </div>
+                    <div><ResearchSidebar report={report} streamEvents={state.streamEvents} /></div>
+                  </div>
                 </div>
-                <div><ResearchSidebar report={report} streamEvents={state.streamEvents} /></div>
               </div>
-              <div style={{ marginTop: 32 }}><ReasoningTrace /></div>
+
+              <div className="no-print" style={{ marginTop: 32 }}><ReasoningTrace /></div>
             </motion.div>
           )}
 

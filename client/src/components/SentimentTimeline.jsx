@@ -82,6 +82,7 @@ export default function SentimentTimeline({ newsItems = [] }) {
               strokeWidth={1.5}
               dot={({ cx, cy, payload }) => (
                 <circle
+                  key={`dot-${payload.idx}`}
                   cx={cx}
                   cy={cy}
                   r={4}
