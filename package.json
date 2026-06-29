@@ -1,0 +1,17 @@
+{
+  "name": "insideiim-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "build": "npm --workspace client run build",
+    "start": "npm --workspace server start"
+  },
+  "dependencies": {
+    "serverless-http": "^3.0.0"
+  }
+}
