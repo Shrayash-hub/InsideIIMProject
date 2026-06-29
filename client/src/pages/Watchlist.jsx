@@ -1,120 +1,175 @@
 import { Link } from "react-router-dom";
-import { TrendingUp, Trash2, BookMarked, ArrowRight } from "lucide-react";
+import { TrendingUp, Trash2, BookMarked, ArrowRight, Loader2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useWatchlist } from "../hooks/useWatchlist.js";
 
-const serif = (sz, color = "#2C2C2C") => ({
-  fontFamily: "Times New Roman, Times, serif",
-  fontSize: sz,
-  fontWeight: 700,
-  color,
-  margin: 0,
-});
-const sans = (sz, color = "#4A4A4A") => ({
-  fontFamily: "Arial, sans-serif",
-  fontSize: sz,
-  color,
-  margin: 0,
-  lineHeight: 1.5,
-});
-
-const VERDICT_STYLE = {
-  INVEST: { color: "#2d5a27", background: "#E8F0E6", border: "1px solid #A8C0A0" },
-  PASS:   { color: "#9B2C2C", background: "#FDF0F0", border: "1px solid #E8B0B0" },
-  WATCH:  { color: "#92620A", background: "#FFFBF0", border: "1px solid #E8D0A0" },
+const VERDICT_CONFIG = {
+  INVEST: {
+    badge: "bg-green-100 text-green-800 border border-green-200",
+    dot: "bg-green-500",
+  },
+  PASS: {
+    badge: "bg-red-100 text-red-800 border border-red-200",
+    dot: "bg-red-500",
+  },
+  WATCH: {
+    badge: "bg-amber-100 text-amber-800 border border-amber-200",
+    dot: "bg-amber-500",
+  },
 };
 
 export default function Watchlist() {
   const { currentUser } = useAuth();
   const { watchlist, loading, removeFromWatchlist } = useWatchlist();
 
+  const initials = currentUser?.name
+    ? currentUser.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+    : currentUser?.email?.[0]?.toUpperCase() ?? "U";
+
   return (
-    <div style={{ minHeight: "100vh", background: "#E2E2E2", display: "flex", flexDirection: "column" }}>
+    <div className="min-h-screen bg-finto-bg flex flex-col font-sans text-finto-text">
+
       {/* Header */}
-      <header style={{ background: "#4E5944", borderBottom: "1px solid rgba(255,255,255,0.18)", boxShadow: "0 2px 12px rgba(0,0,0,0.08)" }}>
-        <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 48px", display: "flex", alignItems: "center", justifyContent: "space-between", minHeight: 72 }}>
-          <Link to="/" style={{ display: "flex", alignItems: "center", gap: 14, textDecoration: "none" }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(255,255,255,0.16)", border: "1px solid rgba(255,255,255,0.28)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <TrendingUp style={{ width: 16, height: 16, color: "#fff" }} />
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
+        <div className="max-w-[1280px] mx-auto px-6 py-4 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2.5 group">
+            <div className="w-8 h-8 rounded-full bg-finto-text flex items-center justify-center">
+              <TrendingUp className="w-4 h-4 text-white" />
             </div>
-            <p style={{ ...serif(22, "#fff"), letterSpacing: "0.08em" }}>ARIA</p>
+            <span className="font-extrabold text-xl tracking-tight">ARIA</span>
           </Link>
-          <Link to="/settings" style={{ ...sans(12, "rgba(255,255,255,0.85)"), textDecoration: "none", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-            {currentUser?.name ?? currentUser?.email}
-          </Link>
+
+          <div className="flex items-center gap-4">
+            <Link
+              to="/"
+              className="flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-finto-text transition-colors"
+            >
+              <ArrowRight className="w-4 h-4 rotate-180" /> New Research
+            </Link>
+            <Link
+              to="/settings"
+              className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+              title="Account settings"
+            >
+              <span className="text-xs font-bold text-finto-text">{initials}</span>
+            </Link>
+          </div>
         </div>
       </header>
 
-      <main style={{ flex: 1, maxWidth: 1000, margin: "0 auto", width: "100%", padding: "40px 24px" }}>
-        {/* Page title */}
-        <div style={{ marginBottom: 28, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <BookMarked style={{ width: 20, height: 20, color: "#4E5944" }} />
-            <h2 style={{ ...serif(28, "#2C2C2C") }}>My Watchlist</h2>
+      <main className="flex-1 max-w-[1000px] w-full mx-auto px-6 py-12">
+
+        {/* Page header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <p className="text-xs font-bold text-gray-400 mb-1 tracking-widest uppercase">Your Portfolio</p>
+            <h1 className="text-3xl font-extrabold tracking-tight flex items-center gap-3">
+              <BookMarked className="w-7 h-7 text-finto-primary" />
+              Watchlist
+            </h1>
           </div>
-          <Link to="/" style={{ display: "flex", alignItems: "center", gap: 6, ...sans(12, "#4E5944"), fontWeight: 700, textDecoration: "none", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-            New Research <ArrowRight style={{ width: 14, height: 14 }} />
+          <Link
+            to="/"
+            className="bg-finto-primary text-finto-dark text-sm font-bold px-5 py-2.5 rounded-full hover:bg-finto-primary-hover transition-colors shadow-sm flex items-center gap-2"
+          >
+            New Research <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 
+        {/* Content */}
         {loading ? (
-          <div style={{ display: "flex", justifyContent: "center", padding: "60px 0" }}>
-            <div style={{ width: 28, height: 28, border: "3px solid #C8C8C8", borderTopColor: "#4E5944", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+          <div className="flex items-center justify-center py-24">
+            <Loader2 className="w-8 h-8 animate-spin text-gray-300" />
           </div>
+
         ) : watchlist.length === 0 ? (
-          <div style={{ background: "#FFFFFF", border: "1px solid #C8C8C8", padding: "56px 32px", textAlign: "center" }}>
-            <BookMarked style={{ width: 36, height: 36, color: "#C8C8C8", margin: "0 auto 16px" }} />
-            <p style={{ ...serif(20, "#2C2C2C"), marginBottom: 8 }}>No companies saved yet</p>
-            <p style={{ ...sans(14, "#6B6B6B"), marginBottom: 24 }}>Run a research report and save companies to track them here.</p>
-            <Link to="/" className="corp-btn-primary" style={{ display: "inline-block", padding: "10px 24px", textDecoration: "none" }}>
-              Start Researching
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-16 text-center">
+            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-5 border border-gray-100">
+              <BookMarked className="w-7 h-7 text-gray-300" />
+            </div>
+            <h2 className="text-xl font-bold mb-2 text-finto-text">No companies saved yet</h2>
+            <p className="text-gray-500 text-sm mb-8 max-w-sm mx-auto">
+              Run a research report and click "Save to Watchlist" on any result to track it here.
+            </p>
+            <Link
+              to="/"
+              className="bg-finto-primary text-finto-dark font-bold px-6 py-3 rounded-full hover:bg-finto-primary-hover transition-colors shadow-sm inline-flex items-center gap-2"
+            >
+              Start Researching <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
+
         ) : (
-          <div style={{ background: "#FFFFFF", border: "1px solid #C8C8C8", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-            <table className="corp-table">
-              <thead>
-                <tr>
-                  <th>Company</th>
-                  <th>Ticker</th>
-                  <th>Exchange</th>
-                  <th>Verdict</th>
-                  <th>AI Score</th>
-                  <th style={{ textAlign: "right" }}>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {watchlist.map((item) => {
-                  const vs = VERDICT_STYLE[item.verdict] ?? VERDICT_STYLE.WATCH;
-                  return (
-                    <tr key={item.$id}>
-                      <td style={{ ...sans(13, "#2C2C2C"), fontWeight: 600 }}>{item.companyName}</td>
-                      <td style={{ fontFamily: "Courier Margin, monospace", fontSize: 13, fontWeight: 700, color: "#4E5944" }}>{item.symbol}</td>
-                      <td style={{ ...sans(12, "#6B6B6B") }}>{item.exchange ?? "—"}</td>
-                      <td>
-                        {item.verdict && (
-                          <span style={{ ...sans(10, vs.color), fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", padding: "2px 8px", ...vs }}>
-                            {item.verdict}
-                          </span>
-                        )}
-                      </td>
-                      <td style={{ fontFamily: "Courier New, monospace", fontSize: 13, color: "#4E5944", fontWeight: 700 }}>
-                        {item.confidenceScore ? `${item.confidenceScore}%` : "—"}
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        <button
-                          onClick={() => removeFromWatchlist(item.$id)}
-                          style={{ background: "none", border: "none", cursor: "pointer", color: "#9B2C2C", padding: 4, display: "inline-flex" }}
-                          title="Remove from watchlist"
-                        >
-                          <Trash2 style={{ width: 15, height: 15 }} />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            {/* Table header */}
+            <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-4 px-6 py-3 border-b border-gray-100 bg-gray-50">
+              {["Company", "Ticker", "Exchange", "Verdict", "AI Score", ""].map((h) => (
+                <span key={h} className="text-xs font-bold text-gray-400 tracking-widest uppercase">
+                  {h}
+                </span>
+              ))}
+            </div>
+
+            {/* Table rows */}
+            <div className="divide-y divide-gray-50">
+              {watchlist.map((item) => {
+                const vc = VERDICT_CONFIG[item.verdict] ?? VERDICT_CONFIG.WATCH;
+                return (
+                  <div
+                    key={item.$id}
+                    className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-4 px-6 py-4 items-center hover:bg-gray-50/50 transition-colors"
+                  >
+                    {/* Company */}
+                    <span className="font-semibold text-sm text-finto-text truncate">
+                      {item.companyName}
+                    </span>
+
+                    {/* Ticker */}
+                    <span className="font-mono text-sm font-bold text-finto-dark">
+                      {item.symbol || "—"}
+                    </span>
+
+                    {/* Exchange */}
+                    <span className="text-sm text-gray-400">
+                      {item.exchange || "—"}
+                    </span>
+
+                    {/* Verdict badge */}
+                    <div>
+                      {item.verdict ? (
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${vc.badge}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${vc.dot}`} />
+                          {item.verdict}
+                        </span>
+                      ) : (
+                        <span className="text-gray-300 text-sm">—</span>
+                      )}
+                    </div>
+
+                    {/* AI Score */}
+                    <span className="font-mono text-sm font-bold text-finto-dark">
+                      {item.confidenceScore ? `${item.confidenceScore}%` : "—"}
+                    </span>
+
+                    {/* Remove */}
+                    <button
+                      onClick={() => removeFromWatchlist(item.$id)}
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
+                      title="Remove from watchlist"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Footer count */}
+            <div className="px-6 py-3 border-t border-gray-100 bg-gray-50">
+              <p className="text-xs text-gray-400 font-medium">
+                {watchlist.length} {watchlist.length === 1 ? "company" : "companies"} tracked
+              </p>
+            </div>
           </div>
         )}
       </main>

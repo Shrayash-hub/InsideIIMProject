@@ -6,10 +6,20 @@ import { validateApiKeys } from "./lib/llm.js";
 
 validateApiKeys();
 
-const requiredEnvVars = ["GROQ_API_KEY", "GOOGLE_API_KEY", "CEREBRAS_API_KEY", "TAVILY_API_KEY"];
-const missingVars = requiredEnvVars.filter((v) => !process.env[v]?.trim());
-if (missingVars.length > 0) {
-  console.warn(`[WARN] Missing env vars: ${missingVars.join(", ")}`);
+// Check that at least one key exists for each provider (supports _1/_2/... naming)
+const providerChecks = [
+  { name: "GROQ_API_KEY",      suffixes: ["", "_1", "_2", "_3", "_4"] },
+  { name: "GOOGLE_API_KEY",    suffixes: ["", "_1", "_2", "_3", "_4"] },
+  { name: "CEREBRAS_API_KEY",  suffixes: ["", "_1", "_2", "_3", "_4"] },
+  { name: "TAVILY_API_KEY",    suffixes: ["", "_1", "_2", "_3", "_4"] },
+];
+const missingProviders = providerChecks
+  .filter(({ name, suffixes }) =>
+    !suffixes.some((s) => process.env[`${name}${s}`]?.trim())
+  )
+  .map(({ name }) => name);
+if (missingProviders.length > 0) {
+  console.warn(`[WARN] No keys found for: ${missingProviders.join(", ")}`);
   console.warn("[WARN] Some LLM fallbacks may not work. Check your .env file.");
 }
 const app = express();

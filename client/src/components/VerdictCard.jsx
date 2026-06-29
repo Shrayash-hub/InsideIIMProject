@@ -1,43 +1,42 @@
 import { motion } from "framer-motion";
-import { Copy, Check, BookMarked } from "lucide-react";
+import { Copy, Check, BookMarked, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { RadialBarChart, RadialBar, PolarAngleAxis, ResponsiveContainer } from "recharts";
 import { useWatchlist } from "../hooks/useWatchlist.js";
 import { useAuth } from "../context/AuthContext.jsx";
-import { cn } from "../lib/utils.js";
 import { useCountUp } from "../hooks/useCountUp.js";
 
 const VERDICT_CONFIG = {
   INVEST: {
-    bg: "#F0F7F0",
-    border: "#4E5944",
-    accent: "#2d5a27",
-    text: "#2d5a27",
-    ring: "#4E5944",
-    label: "INVEST",
+    bg: "#f0fdf4",
+    border: "#86efac",
+    accentBorder: "#16a34a",
+    text: "#15803d",
+    ring: "#22c55e",
+    badge: "bg-green-100 text-green-800",
   },
   PASS: {
-    bg: "#FDF0F0",
-    border: "#9B2C2C",
-    accent: "#9B2C2C",
-    text: "#9B2C2C",
-    ring: "#C53030",
-    label: "PASS",
+    bg: "#fff1f2",
+    border: "#fecdd3",
+    accentBorder: "#e11d48",
+    text: "#be123c",
+    ring: "#f43f5e",
+    badge: "bg-red-100 text-red-800",
   },
   WATCH: {
-    bg: "#FFFBF0",
-    border: "#B7791F",
-    accent: "#B7791F",
-    text: "#92620A",
-    ring: "#D69E2E",
-    label: "WATCH",
+    bg: "#fffbeb",
+    border: "#fde68a",
+    accentBorder: "#d97706",
+    text: "#b45309",
+    ring: "#f59e0b",
+    badge: "bg-amber-100 text-amber-800",
   },
 };
 
 export default function VerdictCard({ report }) {
   const [copied, setCopied] = useState(false);
   const [saving, setSaving] = useState(false);
-  
+
   const { addToWatchlist, watchlist } = useWatchlist();
   const { currentUser } = useAuth();
 
@@ -46,16 +45,11 @@ export default function VerdictCard({ report }) {
   const { verdict, confidenceScore, reasoning, companyName, ticker, exchange } = report;
   const config = VERDICT_CONFIG[verdict] ?? VERDICT_CONFIG.WATCH;
 
-  const isSaved = watchlist.some((item) => 
-    (ticker && item.ticker === ticker) || 
-    item.companyName === companyName
+  const isSaved = watchlist.some(
+    (item) => (ticker && item.symbol === ticker) || item.companyName === companyName
   );
 
-  const animatedScore = useCountUp({
-    end: confidenceScore ?? 0,
-    duration: 1500,
-    enabled: true,
-  });
+  const animatedScore = useCountUp({ end: confidenceScore ?? 0, duration: 1500, enabled: true });
 
   const chartData = [{ name: "confidence", value: confidenceScore ?? 0, fill: config.ring }];
 
@@ -66,36 +60,44 @@ export default function VerdictCard({ report }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleSave = async () => {
+    if (isSaved || saving || !currentUser) return;
+    setSaving(true);
+    await addToWatchlist(report);
+    setSaving(false);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      style={{ width: "100%", maxWidth: "100%", margin: "0 auto 24px", padding: 0, boxSizing: "border-box" }}
+      className="w-full"
     >
       <div
-        className="verdict-pulse"
+        className="rounded-2xl p-8"
         style={{
           background: config.bg,
-          border: "1px solid #C8C8C8",
-          borderLeft: `5px solid ${config.border}`,
-          boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
-          padding: "32px 36px",
+          border: `1px solid ${config.border}`,
+          borderLeft: `4px solid ${config.accentBorder}`,
+          boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
         }}
       >
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 160px", gap: 32, alignItems: "center" }}>
-          {/* Left — verdict */}
-          <div>
-            <p style={{ fontFamily: "Arial, sans-serif", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.12em", color: "#6B6B6B", margin: "0 0 8px", fontWeight: 700 }}>
-              Verdict
-            </p>
-            <h2 style={{ fontFamily: "Times New Roman, Times, serif", fontSize: 52, fontWeight: 700, color: config.text, margin: "0 0 8px", lineHeight: 1 }}>
+        <div className="flex flex-col lg:flex-row gap-8 items-start lg:items-center">
+
+          {/* Left — verdict label */}
+          <div className="flex-shrink-0">
+            <p className="text-xs font-bold tracking-widest uppercase text-gray-400 mb-2">Verdict</p>
+            <h2
+              className="text-5xl font-extrabold tracking-tight leading-none mb-3"
+              style={{ color: config.text }}
+            >
               {verdict}
             </h2>
-            <p style={{ fontFamily: "Arial, sans-serif", fontSize: 13, color: "#6B6B6B", margin: 0 }}>
+            <p className="text-sm text-gray-500 font-medium">
               {companyName}
               {ticker && (
-                <span style={{ fontFamily: "Courier New, monospace", marginLeft: 6 }}>
+                <span className="font-mono ml-2 text-gray-400">
                   · {ticker}{exchange ? ` (${exchange})` : ""}
                 </span>
               )}
@@ -103,78 +105,75 @@ export default function VerdictCard({ report }) {
           </div>
 
           {/* Divider */}
-          <div style={{ borderLeft: "1px solid #D0D0D0", paddingLeft: 32 }}>
-            <p style={{ fontFamily: "Times New Roman, Times, serif", fontSize: 15, color: "#4A4A4A", lineHeight: 1.75, fontStyle: "italic", margin: "0 0 16px" }}>
-              {reasoning}
-            </p>
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div className="hidden lg:block w-px self-stretch bg-gray-200" />
+
+          {/* Middle — reasoning + actions */}
+          <div className="flex-1">
+            <p className="text-gray-600 text-sm leading-relaxed italic mb-6">{reasoning}</p>
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Copy button */}
               <button
                 onClick={handleCopy}
-                className="corp-btn-gray"
-                style={{ display: "flex", alignItems: "center", gap: 6 }}
+                className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-white text-sm font-semibold text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-sm"
               >
-                {copied ? <Check style={{ width: 13, height: 13 }} /> : <Copy style={{ width: 13, height: 13 }} />}
+                {copied ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />}
                 {copied ? "Copied!" : "Copy Summary"}
               </button>
-              
+
+              {/* Save to Watchlist button */}
               {currentUser && (
                 <button
-                  onClick={async () => {
-                    if (isSaved || saving) return;
-                    setSaving(true);
-                    await addToWatchlist(report);
-                    setSaving(false);
-                  }}
+                  onClick={handleSave}
                   disabled={isSaved || saving}
-                  className="corp-btn-outline"
-                  style={{ 
-                    display: "flex", 
-                    alignItems: "center", 
-                    gap: 6,
-                    color: isSaved ? "#6B6B6B" : "#4E5944",
-                    borderColor: isSaved ? "#D0D0D0" : "#4E5944",
-                    background: isSaved ? "#FAFAFA" : "transparent",
-                    cursor: isSaved ? "default" : "pointer"
-                  }}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-colors shadow-sm ${
+                    isSaved
+                      ? "bg-finto-primary text-finto-dark border border-finto-primary cursor-default"
+                      : "bg-finto-dark text-white hover:bg-opacity-90 border border-finto-dark"
+                  }`}
                 >
-                  {isSaved ? <Check style={{ width: 13, height: 13 }} /> : <BookMarked style={{ width: 13, height: 13 }} />}
-                  {isSaved ? "Saved to Watchlist" : saving ? "Saving..." : "Save to Watchlist"}
+                  {saving ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : isSaved ? (
+                    <Check className="w-3.5 h-3.5" />
+                  ) : (
+                    <BookMarked className="w-3.5 h-3.5" />
+                  )}
+                  {isSaved ? "Saved to Watchlist" : saving ? "Saving…" : "Save to Watchlist"}
                 </button>
               )}
             </div>
           </div>
 
           {/* Right — confidence ring */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-            <p style={{ fontFamily: "Arial, sans-serif", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.12em", color: "#6B6B6B", margin: "0 0 8px", fontWeight: 700 }}>
-              Confidence
-            </p>
-            <div style={{ width: 110, height: 110, position: "relative" }}>
+          <div className="flex flex-col items-center flex-shrink-0">
+            <p className="text-xs font-bold tracking-widest uppercase text-gray-400 mb-3">Confidence</p>
+            <div className="relative w-24 h-24">
               <ResponsiveContainer width="100%" height="100%">
                 <RadialBarChart
                   cx="50%" cy="50%"
                   innerRadius="72%" outerRadius="100%"
-                  barSize={8}
+                  barSize={7}
                   data={chartData}
                   startAngle={90} endAngle={-270}
                 >
                   <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
                   <RadialBar
-                    background={{ fill: "#E0E0E0" }}
+                    background={{ fill: "#e5e7eb" }}
                     dataKey="value"
-                    cornerRadius={2}
+                    cornerRadius={4}
                     fill={config.ring}
                     isAnimationActive
                   />
                 </RadialBarChart>
               </ResponsiveContainer>
-              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <span style={{ fontFamily: "Courier New, monospace", fontSize: 22, fontWeight: 700, color: "#2C2C2C" }}>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-xl font-extrabold font-mono text-finto-text">
                   {animatedScore}%
                 </span>
               </div>
             </div>
           </div>
+
         </div>
       </div>
     </motion.div>

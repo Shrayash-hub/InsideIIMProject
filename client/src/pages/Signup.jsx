@@ -1,22 +1,14 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { TrendingUp, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { TrendingUp, AlertCircle, Eye, EyeOff, Brain, BarChart3, Target, Shield } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
 
-const serif = (sz, color = "#2C2C2C") => ({
-  fontFamily: "Times New Roman, Times, serif",
-  fontSize: sz,
-  fontWeight: 700,
-  color,
-  margin: 0,
-});
-const sans = (sz, color = "#4A4A4A") => ({
-  fontFamily: "Arial, sans-serif",
-  fontSize: sz,
-  color,
-  margin: 0,
-  lineHeight: 1.5,
-});
+const FEATURES = [
+  { icon: <Brain className="w-5 h-5" />, text: "Multi-agent AI research pipeline" },
+  { icon: <BarChart3 className="w-5 h-5" />, text: "Live financial data from 135+ exchanges" },
+  { icon: <Target className="w-5 h-5" />, text: "Instant Invest / Watch / Pass verdict" },
+  { icon: <Shield className="w-5 h-5" />, text: "Risk factors & bull-case analysis" },
+];
 
 export default function Signup() {
   const { signup } = useAuth();
@@ -52,47 +44,91 @@ export default function Signup() {
     }
   };
 
+  const strength = password.length === 0 ? 0 : password.length < 6 ? 1 : password.length < 10 ? 2 : 3;
+  const strengthLabel = ["", "Weak", "Good", "Strong"][strength];
+  const strengthColor = ["", "bg-red-400", "bg-amber-400", "bg-finto-primary"][strength];
+
   return (
-    <div style={{ minHeight: "100vh", background: "#E2E2E2", display: "flex", flexDirection: "column" }}>
-      {/* Header */}
-      <header style={{ background: "#4E5944", borderBottom: "1px solid rgba(255,255,255,0.18)", boxShadow: "0 2px 12px rgba(0,0,0,0.08)" }}>
-        <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 48px", display: "flex", alignItems: "center", minHeight: 72 }}>
-          <Link to="/" style={{ display: "flex", alignItems: "center", gap: 14, textDecoration: "none" }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(255,255,255,0.16)", border: "1px solid rgba(255,255,255,0.28)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <TrendingUp style={{ width: 16, height: 16, color: "#fff" }} />
+    <div className="min-h-screen flex font-sans">
+
+      {/* ── LEFT PANEL (dark) ── */}
+      <div className="hidden lg:flex lg:w-[480px] xl:w-[520px] flex-shrink-0 bg-finto-dark flex-col justify-between p-12 relative overflow-hidden">
+        {/* Background glow */}
+        <div className="absolute top-0 right-0 w-80 h-80 bg-finto-primary opacity-10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-finto-primary opacity-5 rounded-full blur-3xl -ml-16 -mb-16 pointer-events-none" />
+
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-3 relative z-10">
+          <div className="w-9 h-9 rounded-full bg-finto-primary flex items-center justify-center">
+            <TrendingUp className="w-5 h-5 text-finto-dark" />
+          </div>
+          <span className="font-extrabold text-xl text-white tracking-tight">ARIA</span>
+        </Link>
+
+        {/* Headline + features */}
+        <div className="relative z-10">
+          <h2 className="text-4xl font-extrabold text-white leading-tight mb-4 tracking-tight">
+            Your edge in<br />every market.
+          </h2>
+          <p className="text-green-200/60 text-sm mb-10 leading-relaxed">
+            Free to start. No credit card. Get your first research report in under 60 seconds.
+          </p>
+          <div className="flex flex-col gap-4">
+            {FEATURES.map((f) => (
+              <div key={f.text} className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-finto-primary flex-shrink-0">
+                  {f.icon}
+                </div>
+                <span className="text-sm text-green-100/80 font-medium">{f.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Footer note */}
+        <p className="text-xs text-green-200/30 relative z-10">
+          For informational purposes only. Not financial advice.
+        </p>
+      </div>
+
+      {/* ── RIGHT PANEL (form) ── */}
+      <div className="flex-1 flex flex-col bg-finto-bg">
+        {/* Mobile logo */}
+        <div className="lg:hidden px-6 pt-6">
+          <Link to="/" className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-full bg-finto-text flex items-center justify-center">
+              <TrendingUp className="w-4 h-4 text-white" />
             </div>
-            <div>
-              <p style={{ ...serif(22, "#fff"), letterSpacing: "0.08em" }}>ARIA</p>
-              <p style={{ ...sans(10, "rgba(255,255,255,0.75)"), textTransform: "uppercase", letterSpacing: "0.12em", marginTop: 2 }}>AI Research Intelligence Agent</p>
-            </div>
+            <span className="font-extrabold text-xl tracking-tight text-finto-text">ARIA</span>
           </Link>
         </div>
-      </header>
 
-      {/* Card */}
-      <main style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "48px 24px" }}>
-        <div style={{ width: "100%", maxWidth: 440 }}>
-          <div style={{ background: "#FFFFFF", border: "1px solid #C8C8C8", boxShadow: "0 4px 16px rgba(0,0,0,0.10)" }}>
-            {/* Card header bar */}
-            <div style={{ background: "#4E5944", padding: "20px 32px" }}>
-              <p style={{ fontFamily: "Arial, sans-serif", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "rgba(255,255,255,0.65)", marginBottom: 4 }}>
-                Investor Access
+        <div className="flex-1 flex items-center justify-center px-6 py-12">
+          <div className="w-full max-w-[420px]">
+
+            {/* Heading */}
+            <div className="mb-8">
+              <h1 className="text-3xl font-extrabold text-finto-text tracking-tight mb-2">
+                Create your account
+              </h1>
+              <p className="text-gray-500 text-sm">
+                Free forever. Start researching any stock in minutes.
               </p>
-              <h1 style={{ ...serif(24, "#fff") }}>Create Your Account</h1>
             </div>
 
-            {/* Form */}
-            <form onSubmit={handleSubmit} style={{ padding: "32px" }}>
-              {error && (
-                <div style={{ display: "flex", alignItems: "flex-start", gap: 10, background: "#FDF0F0", border: "1px solid #E8B0B0", borderLeft: "3px solid #9B2C2C", padding: "12px 14px", marginBottom: 20 }}>
-                  <AlertCircle style={{ width: 16, height: 16, color: "#9B2C2C", flexShrink: 0, marginTop: 1 }} />
-                  <p style={{ ...sans(13, "#9B2C2C") }}>{error}</p>
-                </div>
-              )}
+            {/* Error */}
+            {error && (
+              <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-6">
+                <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            )}
 
-              {/* Full Name */}
-              <div style={{ marginBottom: 20 }}>
-                <label style={{ display: "block", ...sans(11, "#6B6B6B"), fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+              {/* Name */}
+              <div>
+                <label className="block text-xs font-bold text-gray-500 tracking-widest uppercase mb-2">
                   Full Name
                 </label>
                 <input
@@ -102,15 +138,14 @@ export default function Signup() {
                   autoComplete="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="input-glow"
-                  style={{ width: "100%", padding: "10px 12px", border: "1px solid #C8C8C8", background: "#FAFAFA", fontFamily: "Arial, sans-serif", fontSize: 13, color: "#2C2C2C", outline: "none", boxSizing: "border-box" }}
                   placeholder="Jane Smith"
+                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-finto-text placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-finto-primary focus:border-transparent transition-all shadow-sm"
                 />
               </div>
 
               {/* Email */}
-              <div style={{ marginBottom: 20 }}>
-                <label style={{ display: "block", ...sans(11, "#6B6B6B"), fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>
+              <div>
+                <label className="block text-xs font-bold text-gray-500 tracking-widest uppercase mb-2">
                   Email Address
                 </label>
                 <input
@@ -120,18 +155,18 @@ export default function Signup() {
                   autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="input-glow"
-                  style={{ width: "100%", padding: "10px 12px", border: "1px solid #C8C8C8", background: "#FAFAFA", fontFamily: "Arial, sans-serif", fontSize: 13, color: "#2C2C2C", outline: "none", boxSizing: "border-box" }}
                   placeholder="you@example.com"
+                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-finto-text placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-finto-primary focus:border-transparent transition-all shadow-sm"
                 />
               </div>
 
               {/* Password */}
-              <div style={{ marginBottom: 28 }}>
-                <label style={{ display: "block", ...sans(11, "#6B6B6B"), fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>
-                  Password <span style={{ color: "#999", fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(min. 8 characters)</span>
+              <div>
+                <label className="block text-xs font-bold text-gray-500 tracking-widest uppercase mb-2">
+                  Password
+                  <span className="normal-case tracking-normal font-normal text-gray-400 ml-1">(min. 8 characters)</span>
                 </label>
-                <div style={{ position: "relative" }}>
+                <div className="relative">
                   <input
                     id="signup-password"
                     type={showPass ? "text" : "password"}
@@ -139,40 +174,64 @@ export default function Signup() {
                     autoComplete="new-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="input-glow"
-                    style={{ width: "100%", padding: "10px 40px 10px 12px", border: "1px solid #C8C8C8", background: "#FAFAFA", fontFamily: "Arial, sans-serif", fontSize: 13, color: "#2C2C2C", outline: "none", boxSizing: "border-box" }}
                     placeholder="••••••••"
+                    className="w-full px-4 py-3 pr-11 bg-white border border-gray-200 rounded-xl text-sm text-finto-text placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-finto-primary focus:border-transparent transition-all shadow-sm"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPass((v) => !v)}
-                    style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#6B6B6B", padding: 0, display: "flex" }}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                   >
-                    {showPass ? <EyeOff style={{ width: 16, height: 16 }} /> : <Eye style={{ width: 16, height: 16 }} />}
+                    {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
+
+                {/* Password strength bar */}
+                {password.length > 0 && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-300 ${strengthColor}`}
+                        style={{ width: `${(strength / 3) * 100}%` }}
+                      />
+                    </div>
+                    <span className={`text-xs font-semibold ${
+                      strength === 1 ? "text-red-500" : strength === 2 ? "text-amber-500" : "text-green-600"
+                    }`}>
+                      {strengthLabel}
+                    </span>
+                  </div>
+                )}
               </div>
 
+              {/* Submit */}
               <button
                 id="signup-submit"
                 type="submit"
                 disabled={submitting}
-                className="corp-btn-primary"
-                style={{ width: "100%", padding: "12px", fontSize: 13 }}
+                className="w-full bg-finto-primary text-finto-dark font-bold py-3.5 rounded-xl hover:bg-finto-primary-hover transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed text-sm mt-1"
               >
-                {submitting ? "Creating Account…" : "Create Account"}
+                {submitting ? "Creating Account…" : "Create Free Account"}
               </button>
-
-              <p style={{ ...sans(13, "#6B6B6B"), textAlign: "center", marginTop: 20 }}>
-                Already have an account?{" "}
-                <Link to="/login" style={{ color: "#4E5944", fontWeight: 700, textDecoration: "none" }}>
-                  Sign in
-                </Link>
-              </p>
             </form>
+
+            {/* Divider */}
+            <div className="flex items-center gap-3 my-6">
+              <div className="flex-1 h-px bg-gray-200" />
+              <span className="text-xs text-gray-400 font-medium">or</span>
+              <div className="flex-1 h-px bg-gray-200" />
+            </div>
+
+            <p className="text-center text-sm text-gray-500">
+              Already have an account?{" "}
+              <Link to="/login" className="text-finto-dark font-bold hover:text-finto-primary transition-colors">
+                Sign in
+              </Link>
+            </p>
+
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

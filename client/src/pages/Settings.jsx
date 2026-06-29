@@ -1,28 +1,18 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { TrendingUp, User, LogOut, BookMarked, ShieldCheck } from "lucide-react";
+import { TrendingUp, User, LogOut, BookMarked, ShieldCheck, Calendar, Hash } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
 
-const serif = (sz, color = "#2C2C2C") => ({
-  fontFamily: "Times New Roman, Times, serif",
-  fontSize: sz,
-  fontWeight: 700,
-  color,
-  margin: 0,
-});
-const sans = (sz, color = "#4A4A4A") => ({
-  fontFamily: "Arial, sans-serif",
-  fontSize: sz,
-  color,
-  margin: 0,
-  lineHeight: 1.5,
-});
-
-function SettingRow({ label, value }) {
+function SettingRow({ icon, label, value }) {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 0", borderBottom: "1px solid #E8E8E8" }}>
-      <span style={{ ...sans(12, "#6B6B6B"), fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em" }}>{label}</span>
-      <span style={{ ...sans(13, "#2C2C2C"), fontFamily: "Courier New, monospace" }}>{value}</span>
+    <div className="flex items-center justify-between py-4 border-b border-gray-100 last:border-0">
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center flex-shrink-0">
+          {icon}
+        </div>
+        <span className="text-xs font-bold text-gray-400 tracking-widest uppercase">{label}</span>
+      </div>
+      <span className="font-mono text-sm text-finto-text font-semibold">{value}</span>
     </div>
   );
 }
@@ -46,86 +36,107 @@ export default function Settings() {
     ? currentUser.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
     : currentUser?.email?.[0]?.toUpperCase() ?? "U";
 
+  const createdAt = currentUser?.$createdAt
+    ? new Date(currentUser.$createdAt).toLocaleDateString("en-IN", { dateStyle: "medium" })
+    : "—";
+
+  const userId = currentUser?.$id ? currentUser.$id.slice(0, 16) + "…" : "—";
+
   return (
-    <div style={{ minHeight: "100vh", background: "#E2E2E2", display: "flex", flexDirection: "column" }}>
+    <div className="min-h-screen bg-finto-bg flex flex-col font-sans text-finto-text">
+
       {/* Header */}
-      <header style={{ background: "#4E5944", borderBottom: "1px solid rgba(255,255,255,0.18)", boxShadow: "0 2px 12px rgba(0,0,0,0.08)" }}>
-        <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 48px", display: "flex", alignItems: "center", justifyContent: "space-between", minHeight: 72 }}>
-          <Link to="/" style={{ display: "flex", alignItems: "center", gap: 14, textDecoration: "none" }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(255,255,255,0.16)", border: "1px solid rgba(255,255,255,0.28)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <TrendingUp style={{ width: 16, height: 16, color: "#fff" }} />
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
+        <div className="max-w-[1280px] mx-auto px-6 py-4 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2.5 group">
+            <div className="w-8 h-8 rounded-full bg-finto-text flex items-center justify-center">
+              <TrendingUp className="w-4 h-4 text-white" />
             </div>
-            <p style={{ ...serif(22, "#fff"), letterSpacing: "0.08em" }}>ARIA</p>
+            <span className="font-extrabold text-xl tracking-tight">ARIA</span>
           </Link>
-          <Link to="/watchlist" style={{ ...sans(12, "rgba(255,255,255,0.85)"), textDecoration: "none", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", display: "flex", alignItems: "center", gap: 6 }}>
-            <BookMarked style={{ width: 14, height: 14 }} /> Watchlist
-          </Link>
+
+          <div className="flex items-center gap-4">
+            <Link
+              to="/watchlist"
+              className="flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-finto-text transition-colors"
+            >
+              <BookMarked className="w-4 h-4" /> Watchlist
+            </Link>
+            <Link
+              to="/"
+              className="bg-finto-primary text-finto-dark text-sm font-bold px-5 py-2.5 rounded-full hover:bg-finto-primary-hover transition-colors shadow-sm"
+            >
+              Research
+            </Link>
+          </div>
         </div>
       </header>
 
-      <main style={{ flex: 1, maxWidth: 640, margin: "0 auto", width: "100%", padding: "40px 24px" }}>
-        <h2 style={{ ...serif(28, "#2C2C2C"), marginBottom: 28, display: "flex", alignItems: "center", gap: 12 }}>
-          <ShieldCheck style={{ width: 22, height: 22, color: "#4E5944" }} />
-          Account Settings
-        </h2>
+      <main className="flex-1 max-w-[640px] w-full mx-auto px-6 py-12">
+
+        {/* Page header */}
+        <div className="mb-8">
+          <p className="text-xs font-bold text-gray-400 mb-1 tracking-widest uppercase">Account</p>
+          <h1 className="text-3xl font-extrabold tracking-tight flex items-center gap-3">
+            <ShieldCheck className="w-7 h-7 text-finto-primary" />
+            Settings
+          </h1>
+        </div>
 
         {/* Profile card */}
-        <div style={{ background: "#FFFFFF", border: "1px solid #C8C8C8", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", marginBottom: 20 }}>
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-4">
           {/* Card header */}
-          <div style={{ padding: "16px 24px", borderBottom: "1px solid #E8E8E8", display: "flex", alignItems: "center", gap: 6 }}>
-            <User style={{ width: 14, height: 14, color: "#6B6B6B" }} />
-            <span style={{ ...sans(10, "#6B6B6B"), fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em" }}>Profile</span>
+          <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+            <User className="w-4 h-4 text-gray-400" />
+            <span className="text-xs font-bold text-gray-400 tracking-widest uppercase">Profile</span>
           </div>
 
-          <div style={{ padding: "8px 24px 20px" }}>
-            {/* Avatar */}
-            <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "20px 0 16px", borderBottom: "1px solid #E8E8E8", marginBottom: 4 }}>
-              <div style={{ width: 52, height: 52, borderRadius: "50%", background: "#4E5944", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <span style={{ fontFamily: "Arial, sans-serif", fontSize: 18, fontWeight: 700, color: "#fff" }}>{initials}</span>
-              </div>
-              <div>
-                <p style={{ ...serif(18, "#2C2C2C"), marginBottom: 2 }}>{currentUser?.name ?? "—"}</p>
-                <p style={{ ...sans(12, "#6B6B6B") }}>{currentUser?.email}</p>
-              </div>
+          {/* Avatar row */}
+          <div className="px-6 py-5 flex items-center gap-4 border-b border-gray-100">
+            <div className="w-14 h-14 rounded-full bg-finto-dark flex items-center justify-center flex-shrink-0">
+              <span className="text-lg font-extrabold text-finto-primary">{initials}</span>
             </div>
+            <div>
+              <p className="font-bold text-finto-text text-base">{currentUser?.name ?? "—"}</p>
+              <p className="text-sm text-gray-400">{currentUser?.email}</p>
+            </div>
+          </div>
 
-            <SettingRow label="User ID" value={currentUser?.$id?.slice(0, 16) + "…"} />
-            <SettingRow label="Account Created" value={currentUser?.$createdAt ? new Date(currentUser.$createdAt).toLocaleDateString("en-IN", { dateStyle: "medium" }) : "—"} />
+          {/* Info rows */}
+          <div className="px-6 py-2">
+            <SettingRow
+              icon={<Hash className="w-3.5 h-3.5 text-gray-400" />}
+              label="User ID"
+              value={userId}
+            />
+            <SettingRow
+              icon={<Calendar className="w-3.5 h-3.5 text-gray-400" />}
+              label="Member Since"
+              value={createdAt}
+            />
           </div>
         </div>
 
-        {/* Logout card */}
-        <div style={{ background: "#FFFFFF", border: "1px solid #C8C8C8", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", padding: "24px" }}>
-          <p style={{ ...serif(16, "#2C2C2C"), marginBottom: 8 }}>Sign Out</p>
-          <p style={{ ...sans(13, "#6B6B6B"), marginBottom: 20 }}>You'll be redirected to the login page and your session will be cleared.</p>
-          <button
-            id="settings-logout"
-            onClick={handleLogout}
-            disabled={loggingOut}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              background: "#FDF0F0",
-              color: "#9B2C2C",
-              border: "1px solid #E8B0B0",
-              fontFamily: "Arial, sans-serif",
-              fontSize: 13,
-              fontWeight: 700,
-              textTransform: "uppercase",
-              letterSpacing: "0.06em",
-              padding: "10px 20px",
-              cursor: loggingOut ? "not-allowed" : "pointer",
-              opacity: loggingOut ? 0.6 : 1,
-              transition: "background 0.15s",
-            }}
-            onMouseEnter={(e) => { if (!loggingOut) e.currentTarget.style.background = "#FCE8E8"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "#FDF0F0"; }}
-          >
-            <LogOut style={{ width: 14, height: 14 }} />
-            {loggingOut ? "Signing Out…" : "Sign Out"}
-          </button>
+        {/* Sign out card */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <div className="flex items-start justify-between">
+            <div>
+              <h3 className="font-bold text-finto-text mb-1">Sign Out</h3>
+              <p className="text-sm text-gray-400 max-w-xs">
+                Your session will be cleared and you'll be returned to the login page.
+              </p>
+            </div>
+            <button
+              onClick={handleLogout}
+              disabled={loggingOut}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-red-200 bg-red-50 text-red-600 text-sm font-bold hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 ml-4"
+            >
+              <LogOut className="w-4 h-4" />
+              {loggingOut ? "Signing Out…" : "Sign Out"}
+            </button>
+          </div>
         </div>
+
       </main>
     </div>
   );

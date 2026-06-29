@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { RotateCcw, AlertCircle, TrendingUp, FileText, BarChart3, Users, Brain, Shield, Zap, Globe, CheckCircle, BookMarked, Download, Loader2 } from "lucide-react";
+import {
+  RotateCcw, AlertCircle, FileText, BarChart3,
+  Brain, Shield, Zap, Globe, TrendingUp,
+  BookMarked, Download, Loader2,
+  ArrowRight, Target, Activity, Scale
+} from "lucide-react";
 import html2pdf from "html2pdf.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import SearchBar from "../components/SearchBar.jsx";
@@ -13,96 +18,76 @@ import KeyInsightsPanel from "../components/KeyInsightsPanel.jsx";
 import ResearchSidebar from "../components/ResearchSidebar.jsx";
 import { useResearch } from "../hooks/useResearch.js";
 
-const W = { maxWidth: 1400, margin: "0 auto", padding: "0 48px" };
-
-const TICKERS = [
-  { s: "S&P 500",   v: "5,487.03",  c: "+0.34%", up: true },
-  { s: "NASDAQ",    v: "17,925.12", c: "+0.28%", up: true },
-  { s: "NIFTY 50",  v: "23,644.80", c: "-0.12%", up: false },
-  { s: "DOW JONES", v: "38,890.22", c: "+0.19%", up: true },
-  { s: "GOLD",      v: "$2,319.40", c: "+0.61%", up: true },
-  { s: "BITCOIN",   v: "$61,204",   c: "-1.24%", up: false },
-];
-
 const FEATURES = [
-  { Icon: FileText,   title: "AI Research Reports",   desc: "Institutional-grade reports synthesizing financial data, news sentiment, and competitive intelligence in under 60 seconds." },
-  { Icon: BarChart3,  title: "Market Intelligence",   desc: "Real-time financial metrics, price targets, 52-week ranges, and analyst consensus from 50+ global exchanges." },
-  { Icon: Users,      title: "Competitor Analysis",   desc: "Automated competitive landscape mapping with market positioning, advantages, and disadvantage scoring." },
-  { Icon: Brain,      title: "Portfolio Insights",    desc: "AI-driven verdicts with confidence scoring, risk/reward assessment, and fully explainable reasoning traces." },
+  {
+    icon: <Brain className="w-5 h-5 text-finto-primary" />,
+    title: "AI-Powered Analysis",
+    desc: "Multi-agent system orchestrates ticker resolution, financial data, news sentiment, and competitor analysis in parallel.",
+  },
+  {
+    icon: <BarChart3 className="w-5 h-5 text-finto-primary" />,
+    title: "Live Financial Metrics",
+    desc: "Real-time P/E, EPS, revenue growth, debt ratios, and more — pulled directly from market data feeds.",
+  },
+  {
+    icon: <Activity className="w-5 h-5 text-finto-primary" />,
+    title: "News Sentiment Scoring",
+    desc: "Scans hundreds of recent articles and scores market sentiment so you know what the street is feeling right now.",
+  },
+  {
+    icon: <Scale className="w-5 h-5 text-finto-primary" />,
+    title: "Competitive Intelligence",
+    desc: "Benchmarks the company against its top competitors across valuation, growth, and moat dimensions.",
+  },
+  {
+    icon: <Target className="w-5 h-5 text-finto-primary" />,
+    title: "Price Target & Verdict",
+    desc: "Clear Invest / Watch / Pass verdict with a confidence score and a justified price target range.",
+  },
+  {
+    icon: <Shield className="w-5 h-5 text-finto-primary" />,
+    title: "Risk Factor Breakdown",
+    desc: "Explicit bull-case drivers and bear-case risks surfaced from filings, news, and macro context.",
+  },
 ];
-
-const WHY = [
-  { Icon: Shield,      title: "Institutional-Grade",  desc: "Built to professional fund manager standards. Every report synthesizes multiple verified data sources with systematic rigor." },
-  { Icon: Zap,         title: "60-Second Delivery",   desc: "Parallel AI agents research financial data, news, web, and competitive landscape simultaneously — all in under a minute." },
-  { Icon: Globe,       title: "Global Coverage",      desc: "10,000+ companies across 50+ exchanges: NYSE, NASDAQ, BSE, NSE, LSE, and major Asian markets." },
-  { Icon: CheckCircle, title: "Explainable AI",       desc: "Full agent reasoning trace with every report. Understand exactly how the investment verdict was reached." },
-];
-
-const STATS = [
-  { v: "10,000+", l: "Companies Covered" }, { v: "50+", l: "Global Exchanges" },
-  { v: "< 60s",   l: "Avg. Research Time" }, { v: "Live", l: "Market Data Feed" },
-  { v: "A.I.",    l: "Confidence Scoring" }, { v: "SEC/SEBI", l: "Filing Coverage" },
-];
-
-const SAMPLES = [
-  { co: "Apple Inc.",      ticker: "AAPL",     ex: "NASDAQ", verdict: "INVEST", score: 82 },
-  { co: "Microsoft Corp.", ticker: "MSFT",     ex: "NASDAQ", verdict: "INVEST", score: 78 },
-  { co: "NVIDIA Corp.",    ticker: "NVDA",     ex: "NASDAQ", verdict: "INVEST", score: 85 },
-  { co: "Reliance Ind.",   ticker: "RELIANCE", ex: "NSE",    verdict: "WATCH",  score: 65 },
-  { co: "Tesla Inc.",      ticker: "TSLA",     ex: "NASDAQ", verdict: "WATCH",  score: 58 },
-];
-
-const VS = {
-  INVEST: { color: "#2d5a27", bg: "#E8F0E6", border: "1px solid #A8C0A0" },
-  PASS:   { color: "#9B2C2C", bg: "#FDF0F0", border: "1px solid #E8B0B0" },
-  WATCH:  { color: "#92620A", bg: "#FFFBF0", border: "1px solid #E8D0A0" },
-};
-
-const card = { background: "#FFFFFF", border: "1px solid #C8C8C8", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" };
-const label = { fontFamily: "Arial, sans-serif", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#6B6B6B" };
-const serif = (sz, color = "#2C2C2C") => ({ fontFamily: "Times New Roman, Times, serif", fontSize: sz, fontWeight: 700, color, margin: 0 });
-const sans = (sz, color = "#4A4A4A") => ({ fontFamily: "Arial, sans-serif", fontSize: sz, color, margin: 0, lineHeight: 1.65 });
 
 export default function Home() {
   const { state, reset, startResearch } = useResearch();
   const { currentUser } = useAuth();
   const { status, report } = state;
-  const isIdle = status === "idle";
   const [downloading, setDownloading] = useState(false);
 
   const handleDownloadPDF = async () => {
     if (downloading || !report) return;
     setDownloading(true);
-    
     try {
-      const element = document.getElementById("pdf-report-content") ?? document.getElementById("pdf-report-container");
-      
-      // Temporarily set width to print-friendly layout for the selected content
+      const element =
+        document.getElementById("pdf-report-content") ??
+        document.getElementById("pdf-report-container");
       const origWidth = element.style.width;
       const origMaxWidth = element.style.maxWidth;
       const origMargin = element.style.margin;
       element.style.width = "1100px";
       element.style.maxWidth = "1100px";
       element.style.margin = "0 auto";
-      
+
       const opt = {
-        margin:       [8, 8, 8, 8],
-        filename:     `${report.ticker || report.companyName || 'Research'}_Report.pdf`,
-        image:        { type: 'jpeg', quality: 1.0 },
-        html2canvas:  { 
-          scale: 2, 
-          useCORS: true, 
-          letterRendering: true, 
-          backgroundColor: '#FFFFFF',
-          windowWidth: 1100
+        margin: [8, 8, 8, 8],
+        filename: `${report.ticker || report.companyName || "Research"}_Report.pdf`,
+        image: { type: "jpeg", quality: 1.0 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          letterRendering: true,
+          backgroundColor: "#FFFFFF",
+          windowWidth: 1100,
         },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:    { mode: 'avoid-all' }
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        pagebreak: { mode: "avoid-all" },
       };
 
       await html2pdf().set(opt).from(element).save();
-      
-      // Restore styles
+
       element.style.width = origWidth;
       element.style.maxWidth = origMaxWidth;
       element.style.margin = origMargin;
@@ -114,271 +99,429 @@ export default function Home() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#E2E2E2", display: "flex", flexDirection: "column" }}>
+    <div className="min-h-screen bg-finto-bg flex flex-col font-sans text-finto-text">
       {status === "loading" && <div className="progress-bar-top" />}
 
-      {/* Header */}
-      <header style={{ background: "#4E5944", borderBottom: "1px solid rgba(255,255,255,0.18)", position: "sticky", top: 0, zIndex: 50, boxShadow: "0 12px 24px rgba(0,0,0,0.08)" }}>
-        <div style={{ ...W, display: "flex", alignItems: "center", justifyContent: "space-between", minHeight: 80, padding: "16px 0" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 14, background: "rgba(255,255,255,0.16)", border: "1px solid rgba(255,255,255,0.28)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <TrendingUp style={{ width: 18, height: 18, color: "#fff" }} />
+      {/* ── HEADER ── */}
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
+        <div className="max-w-[1280px] mx-auto px-6 py-4 flex items-center justify-between">
+          {/* Logo */}
+          <div
+            className="flex items-center gap-2.5 cursor-pointer group"
+            onClick={reset}
+          >
+            <div className="w-8 h-8 rounded-full bg-finto-text flex items-center justify-center">
+              <TrendingUp className="w-4 h-4 text-white" />
             </div>
-            <div>
-              <h1 style={{ ...serif(24, "#fff"), lineHeight: 1.05, letterSpacing: "0.08em" }}>ARIA</h1>
-              <p style={{ ...sans(11, "rgba(255,255,255,0.8)"), textTransform: "uppercase", letterSpacing: "0.13em", marginTop: 4 }}>AI Research Intelligence Agent</p>
-            </div>
+            <span className="font-extrabold text-xl tracking-tight">ARIA</span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+
+          {/* Right-side actions */}
+          <div className="flex items-center gap-4">
             {status === "complete" && (
-              <button 
-                onClick={handleDownloadPDF} 
+              <button
+                onClick={handleDownloadPDF}
                 disabled={downloading}
-                className="corp-btn-outline no-print" 
-                style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 18px", color: "#4E5944", borderColor: "#4E5944", background: "#FFFFFF", opacity: downloading ? 0.7 : 1, cursor: downloading ? "wait" : "pointer" }}
+                className="hidden md:flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-finto-text transition-colors no-print"
               >
-                {downloading ? <Loader2 style={{ width: 14, height: 14, animation: "spin 1s linear infinite" }} /> : <Download style={{ width: 14, height: 14 }} />}
-                {downloading ? "Generating PDF..." : "Download PDF"}
+                {downloading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4" />
+                )}
+                {downloading ? "Generating…" : "Download PDF"}
               </button>
             )}
+
             {status !== "idle" && (
-              <button onClick={reset} className="corp-btn-outline no-print" style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 18px" }}>
-                <RotateCcw style={{ width: 14, height: 14 }} /> New Research
+              <button
+                onClick={reset}
+                className="hidden md:flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-finto-text transition-colors no-print"
+              >
+                <RotateCcw className="w-4 h-4" /> New Research
               </button>
             )}
+
             {currentUser ? (
-              /* Logged-in user area */
-              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                <Link to="/watchlist" style={{ display: "flex", alignItems: "center", gap: 6, ...sans(12, "rgba(255,255,255,0.85)"), textDecoration: "none", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                  <BookMarked style={{ width: 14, height: 14 }} /> Watchlist
+              <div className="flex items-center gap-4">
+                <Link
+                  to="/watchlist"
+                  className="flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-finto-text transition-colors"
+                >
+                  <BookMarked className="w-4 h-4" /> Watchlist
                 </Link>
-                <Link to="/settings" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
-                  <div style={{ width: 34, height: 34, borderRadius: "50%", background: "rgba(255,255,255,0.2)", border: "1px solid rgba(255,255,255,0.4)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <span style={{ fontFamily: "Arial, sans-serif", fontSize: 12, fontWeight: 700, color: "#fff" }}>
-                      {(currentUser.name ?? currentUser.email ?? "U").split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
-                    </span>
-                  </div>
-                  <span style={{ ...sans(12, "rgba(255,255,255,0.85)"), fontWeight: 600 }}>{currentUser.name?.split(" ")[0] ?? currentUser.email}</span>
+                <Link
+                  to="/settings"
+                  className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                  title="Account settings"
+                >
+                  <span className="text-xs font-bold text-finto-text">
+                    {(currentUser.name ?? currentUser.email ?? "U")
+                      .substring(0, 2)
+                      .toUpperCase()}
+                  </span>
                 </Link>
               </div>
             ) : (
-              /* Logged-out area */
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <Link to="/login" className="corp-btn-outline" style={{ padding: "7px 16px", textDecoration: "none", fontSize: 12 }}>Sign In</Link>
-                <Link to="/signup" style={{ background: "rgba(255,255,255,0.15)", color: "#fff", fontFamily: "Arial, sans-serif", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", border: "1px solid rgba(255,255,255,0.5)", padding: "7px 16px", textDecoration: "none", transition: "background 0.15s" }}>Sign Up</Link>
+              <div className="flex items-center gap-4">
+                <Link
+                  to="/login"
+                  className="text-sm font-semibold text-finto-text hover:text-gray-500 transition-colors hidden sm:block"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to="/signup"
+                  className="bg-finto-primary text-finto-dark text-sm font-bold px-5 py-2.5 rounded-full hover:bg-finto-primary-hover transition-colors shadow-sm"
+                >
+                  Sign Up Free
+                </Link>
               </div>
             )}
           </div>
         </div>
       </header>
 
-      <main style={{ flex: 1 }}>
+      <main className="flex-1 flex flex-col">
         <AnimatePresence mode="wait">
 
-          {/* ── IDLE ── */}
+          {/* ══════════════════════════════════════════
+              IDLE STATE — LANDING PAGE
+          ══════════════════════════════════════════ */}
           {status === "idle" && (
-            <motion.div key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.35 }}>
+            <motion.div
+              key="idle"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.35 }}
+            >
 
-              {/* Market Ticker removed per request */}
+              {/* 1 ── HERO */}
+              <section className="pt-24 pb-16 px-6 text-center max-w-[860px] mx-auto flex flex-col items-center">
+                {/* Live badge */}
+                <div className="bg-green-50 text-green-800 text-xs font-bold px-4 py-1.5 rounded-full mb-8 flex items-center gap-2 border border-green-200">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                  </span>
+                  Powered by live market data &amp; AI agents
+                </div>
 
-              {/* Hero */}
-              <div style={{ ...W, padding: "48px 48px 0" }}>
-                <div style={{ ...card, display: "flex", minHeight: 440 }}>
-                  {/* Col 1 — headline */}
-                  <div style={{ flex: "0 0 46%", padding: "40px 40px 40px 40px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                    <p style={{ ...label, marginBottom: 12 }}>Institutional Research Platform</p>
-                    <h2 style={{ ...serif(52, "#2C2C2C"), lineHeight: 1.1, marginBottom: 16 }}>
-                      Institutional-Grade<br />
-                      <span style={{ color: "#4E5944" }}>Investment Intelligence</span>
+                <h1 className="text-5xl md:text-6xl lg:text-[70px] font-extrabold tracking-tight text-finto-text leading-[1.06] mb-6">
+                  Institutional Research,<br />in Seconds
+                </h1>
+                <p className="text-gray-500 text-lg md:text-xl max-w-[600px] mb-10 leading-relaxed font-medium">
+                  Type a company name. ARIA's multi-agent system fetches live financials, scans the news, benchmarks competitors, and delivers an analyst-grade report with a clear verdict.
+                </p>
+
+                {/* Hero SearchBar */}
+                <div className="w-full max-w-xl mb-6">
+                  <SearchBar />
+                </div>
+
+                <p className="text-xs text-gray-400 font-medium">
+                  Works for any publicly traded company globally — NSE, BSE, NYSE, NASDAQ and more.
+                </p>
+              </section>
+
+              {/* 2 ── WHAT ARIA DOES (Bento grid) */}
+              <section className="py-20 px-6 bg-white border-y border-gray-100">
+                <div className="max-w-[1200px] mx-auto">
+                  <div className="mb-12">
+                    <p className="text-xs font-bold text-gray-400 mb-3 tracking-widest uppercase">Platform Capabilities</p>
+                    <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight">
+                      Everything You Need to Evaluate a Stock
                     </h2>
-                    <p style={{ ...sans(15, "#5A5A5A"), maxWidth: 520, marginBottom: 28, lineHeight: 1.6 }}>
-                      AI-powered research on any public company delivered in under 60 seconds. Built for serious investors who demand institutional-grade analysis.
+                    <p className="text-gray-500 max-w-2xl text-lg">
+                      ARIA chains together six specialised AI agents — each with access to real-time tools — so you get a complete picture, not a summary.
                     </p>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                      {["Comprehensive financial metrics & price targets", "AI-powered buy/sell/hold verdicts with confidence scores", "Real-time news sentiment & competitor intelligence"].map((f, i) => (
-                        <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                          <span style={{ width: 6, height: 6, background: "#4E5944", display: "inline-block", flexShrink: 0, marginTop: 6 }} />
-                          <span style={{ ...sans(13, "#4A4A4A") }}>{f}</span>
+                  </div>
+
+                  {/* Bento: 2-col left big + 4-card right grid */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                    {/* Left tall card */}
+                    <div className="lg:col-span-1 bg-gray-50 rounded-[24px] p-8 border border-gray-100 flex flex-col gap-6 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)]">
+                      <div>
+                        <div className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center mb-4 shadow-sm">
+                          <Brain className="w-5 h-5 text-finto-dark" />
+                        </div>
+                        <h3 className="text-xl font-bold mb-2">Multi-Agent Pipeline</h3>
+                        <p className="text-gray-500 text-sm leading-relaxed">
+                          Six agents run in sequence: Ticker Resolver → Financial Data → News Sentiment → Competitor Analysis → Decision Engine → Report Builder. Every step is streamed live to your screen.
+                        </p>
+                      </div>
+                      {/* Agent step visualisation */}
+                      <div className="flex flex-col gap-2 mt-auto">
+                        {["Ticker Resolver", "Financial Data", "News Sentiment", "Competitor Analysis", "Decision Engine", "Report Builder"].map((step, i) => (
+                          <div key={step} className="flex items-center gap-3">
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${i < 3 ? "bg-finto-primary text-finto-dark" : "bg-gray-200 text-gray-500"}`}>
+                              {i + 1}
+                            </div>
+                            <span className="text-xs font-semibold text-gray-600">{step}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Right 2×2 grid */}
+                    <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      {FEATURES.slice(1).map((f) => (
+                        <div
+                          key={f.title}
+                          className="bg-gray-50 rounded-[20px] p-6 border border-gray-100 flex flex-col gap-3 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)]"
+                        >
+                          <div className="w-9 h-9 rounded-lg bg-white border border-gray-200 flex items-center justify-center shadow-sm flex-shrink-0">
+                            {f.icon}
+                          </div>
+                          <h4 className="font-bold text-finto-text">{f.title}</h4>
+                          <p className="text-gray-500 text-sm leading-relaxed">{f.desc}</p>
                         </div>
                       ))}
                     </div>
                   </div>
+                </div>
+              </section>
 
-                  {/* Divider */}
-                  <div style={{ width: 1, background: "#D0D0D0", flexShrink: 0 }} />
+              {/* 3 ── GLOBAL COVERAGE */}
+              <section className="py-20 px-6 bg-finto-bg">
+                <div className="max-w-[1200px] mx-auto">
+                  <div className="flex flex-col lg:flex-row items-center gap-16">
+                    {/* Text */}
+                    <div className="flex-1">
+                      <p className="text-xs font-bold text-gray-400 mb-3 tracking-widest uppercase">Global Coverage</p>
+                      <h2 className="text-3xl md:text-5xl font-bold mb-6 tracking-tight leading-tight">
+                        Research Any Stock,<br />Anywhere in the World
+                      </h2>
+                      <p className="text-gray-500 text-lg mb-8 max-w-md leading-relaxed">
+                        Whether it's Apple on NASDAQ, Reliance on NSE, or HSBC on the LSE — ARIA resolves tickers, normalises currencies, and delivers consistent reports across 135+ exchanges.
+                      </p>
+                      <button
+                        onClick={() => startResearch("Infosys", "medium")}
+                        className="bg-finto-primary text-finto-dark font-bold px-6 py-3 rounded-full flex items-center gap-2 hover:bg-finto-primary-hover transition-colors shadow-sm"
+                      >
+                        Try with Infosys <ArrowRight className="w-4 h-4" />
+                      </button>
+                    </div>
 
-                  {/* Testimonial section removed per request */}
+                    {/* Visual */}
+                    <div className="flex-1 flex justify-center">
+                      <div className="relative w-80 h-80 bg-white rounded-full border border-gray-200 shadow-xl overflow-hidden flex items-center justify-center">
+                        <Globe className="w-64 h-64 text-gray-100 absolute" strokeWidth={0.5} />
+                        {[
+                          { code: "US", bg: "bg-blue-100", pos: "top-1/4 left-1/4" },
+                          { code: "IN", bg: "bg-orange-100", pos: "top-1/3 right-1/4" },
+                          { code: "UK", bg: "bg-red-100", pos: "bottom-1/3 right-1/3" },
+                          { code: "JP", bg: "bg-pink-100", pos: "bottom-1/4 left-1/3" },
+                        ].map(({ code, bg, pos }) => (
+                          <div
+                            key={code}
+                            className={`absolute ${pos} w-9 h-9 ${bg} rounded-full border-2 border-white shadow-md flex items-center justify-center text-[10px] font-bold text-gray-700`}
+                          >
+                            {code}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
 
-                  {/* Col 3 — live stats */}
-                  <div style={{ flex: 1, padding: "40px 40px", display: "flex", flexDirection: "column", justifyContent: "center", gap: 0 }}>
-                    <p style={{ ...label, marginBottom: 16 }}>Platform Statistics</p>
+                  {/* 3-col stat cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
                     {[
-                      { val: "10,000+", lbl: "Companies Covered" },
-                      { val: "50+",     lbl: "Global Exchanges" },
-                      { val: "< 60s",   lbl: "Avg. Research Time" },
-                      { val: "98.2%",   lbl: "Research Accuracy" },
-                      { val: "Live",    lbl: "Market Data Feed" },
-                      { val: "SEC / SEBI", lbl: "Filing Coverage" },
-                    ].map((s, i) => (
-                      <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: i < 5 ? "1px solid #E8E8E8" : "none" }}>
-                        <span style={{ ...sans(12, "#6B6B6B"), fontWeight: 600 }}>{s.lbl}</span>
-                        <span style={{ fontFamily: "Courier New, monospace", fontSize: 14, fontWeight: 700, color: "#4E5944" }}>{s.val}</span>
-                      </div>
-                    ))}
-                    <div style={{ marginTop: 20, padding: "10px 12px", background: "#F0F7F0", border: "1px solid #A8C0A0" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                        <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#4E5944", animation: "pulse 2s ease-in-out infinite" }} />
-                        <span style={{ ...sans(9, "#3a4333"), fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em" }}>AI Agents Active</span>
-                      </div>
-                      <p style={{ ...sans(10, "#6B6B6B"), margin: 0 }}>47 research queries processed in the last hour</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Search */}
-              <div style={{ ...W, padding: "40px 48px" }}>
-                <SearchBar tall />
-              </div>
-
-              {/* Feature Cards */}
-              <div style={{ ...W, padding: "0 48px 48px" }}>
-                <p style={{ ...label, marginBottom: 20 }}>Platform Capabilities</p>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
-                  {FEATURES.map(({ Icon, title, desc }, i) => (
-                    <div key={i} style={{ ...card, padding: "28px 24px", transition: "box-shadow 0.2s, transform 0.2s" }}
-                      onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.12)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
-                      onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.08)"; e.currentTarget.style.transform = "none"; }}>
-                      <div style={{ width: 40, height: 40, background: "#F0F7F0", border: "1px solid #A8C0A0", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
-                        <Icon style={{ width: 18, height: 18, color: "#4E5944" }} />
-                      </div>
-                      <p style={{ ...serif(15, "#2C2C2C"), marginBottom: 10 }}>{title}</p>
-                      <p style={{ ...sans(13, "#6B6B6B"), lineHeight: 1.65 }}>{desc}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Why ARIA */}
-              <div style={{ background: "#4E5944", padding: "56px 0" }}>
-                <div style={{ ...W }}>
-                  <p style={{ fontFamily: "Arial, sans-serif", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.55)", marginBottom: 12 }}>Why Choose ARIA</p>
-                  <h3 style={{ ...serif(34, "#fff"), marginBottom: 40, maxWidth: 600, lineHeight: 1.2 }}>The research platform built for institutional investors</h3>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 1, background: "rgba(255,255,255,0.1)" }}>
-                    {WHY.map(({ Icon, title, desc }, i) => (
-                      <div key={i} style={{ background: "#4E5944", padding: "32px 28px" }}>
-                        <Icon style={{ width: 22, height: 22, color: "rgba(255,255,255,0.75)", marginBottom: 14 }} />
-                        <p style={{ ...serif(16, "#fff"), marginBottom: 10 }}>{title}</p>
-                        <p style={{ ...sans(13, "rgba(255,255,255,0.65)"), lineHeight: 1.7 }}>{desc}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Research Coverage section removed per request */}
-
-              {/* Sample Research */}
-              <div style={{ background: "#F5F5F3", borderTop: "1px solid #D8D8D8", borderBottom: "1px solid #D8D8D8", padding: "52px 0" }}>
-                <div style={{ ...W }}>
-                  <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 20 }}>
-                    <p style={{ ...label }}>Recent Research Examples</p>
-                    <span style={{ ...sans(12, "#6B6B6B") }}>Click any card to run a live report</span>
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 14 }}>
-                    {SAMPLES.map((s, i) => {
-                      const vs = VS[s.verdict] ?? VS.WATCH;
-                      return (
-                        <div key={i} style={{ ...card, padding: "22px 20px", cursor: "pointer", transition: "box-shadow 0.2s, transform 0.2s" }}
-                          onClick={() => startResearch(s.co, "medium")}
-                          onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 18px rgba(0,0,0,0.12)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
-                          onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.08)"; e.currentTarget.style.transform = "none"; }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                            <div>
-                              <p style={{ fontFamily: "Courier New, monospace", fontSize: 13, fontWeight: 700, color: "#4E5944", margin: "0 0 2px" }}>{s.ticker}</p>
-                              <p style={{ ...sans(10, "#6B6B6B"), margin: 0 }}>{s.ex}</p>
-                            </div>
-                            <span style={{ fontFamily: "Arial, sans-serif", fontSize: 10, fontWeight: 700, padding: "3px 8px", textTransform: "uppercase", letterSpacing: "0.06em", ...vs }}>{s.verdict}</span>
-                          </div>
-                          <p style={{ ...serif(14, "#2C2C2C"), marginBottom: 12, lineHeight: 1.3 }}>{s.co}</p>
-                          <div>
-                            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                              <span style={{ ...sans(10, "#6B6B6B") }}>AI Score</span>
-                              <span style={{ fontFamily: "Courier New, monospace", fontSize: 11, fontWeight: 700, color: "#4E5944" }}>{s.score}/100</span>
-                            </div>
-                            <div style={{ height: 4, background: "#E8E8E8" }}>
-                              <div style={{ height: "100%", background: "#4E5944", width: `${s.score}%` }} />
-                            </div>
-                          </div>
+                      { icon: <Globe className="w-5 h-5 text-gray-600" />, title: "135+ Exchanges", desc: "Covers major global exchanges including NSE, BSE, NYSE, NASDAQ, LSE, and more." },
+                      { icon: <Zap className="w-5 h-5 text-gray-600" />, title: "Under 60 Seconds", desc: "Full multi-agent research pipeline completes in under a minute from query to verdict." },
+                      { icon: <FileText className="w-5 h-5 text-gray-600" />, title: "PDF Export", desc: "Download a professionally formatted PDF report to share with your team or save for later." },
+                    ].map((c) => (
+                      <div key={c.title} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-start">
+                        <div className="w-10 h-10 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center mb-4">
+                          {c.icon}
                         </div>
-                      );
-                    })}
+                        <h4 className="font-bold mb-2">{c.title}</h4>
+                        <p className="text-sm text-gray-500 leading-relaxed">{c.desc}</p>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              </div>
+              </section>
 
-              {/* Trusted By */}
-              <div style={{ ...W, padding: "44px 48px", textAlign: "center" }}>
-                <p style={{ ...label, marginBottom: 24 }}>Trusted By Leading Financial Institutions</p>
-                <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "10px 32px" }}>
-                  {["Citadel Securities", "Two Sigma", "BlackRock", "Vanguard", "Renaissance Tech", "Bridgewater", "AQR Capital", "D.E. Shaw"].map(n => (
-                    <span key={n} style={{ fontFamily: "Times New Roman, Times, serif", fontSize: 16, fontWeight: 700, color: "#AAAAAA", letterSpacing: "0.02em" }}>{n}</span>
-                  ))}
+              {/* 4 ── DARK CTA BANNER */}
+              <section className="py-20 px-6 bg-finto-bg">
+                <div className="max-w-[960px] mx-auto bg-finto-dark rounded-[32px] p-12 md:p-20 text-center text-white relative overflow-hidden shadow-2xl">
+                  <div className="absolute top-0 right-0 w-72 h-72 bg-green-400 opacity-10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+                  <div className="absolute bottom-0 left-0 w-72 h-72 bg-green-400 opacity-10 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
+
+                  <h2 className="text-4xl md:text-5xl lg:text-[56px] font-bold mb-6 relative z-10 tracking-tight leading-tight">
+                    Stop Guessing.<br />Start Researching.
+                  </h2>
+                  <p className="text-green-100/75 mb-10 max-w-xl mx-auto relative z-10 text-lg font-medium">
+                    Get a complete institutional-grade research report on any stock in the world — for free, in under a minute.
+                  </p>
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-4 relative z-10">
+                    <button
+                      onClick={() => startResearch("Apple", "medium")}
+                      className="bg-finto-primary text-finto-dark font-bold px-8 py-3.5 rounded-full hover:bg-finto-primary-hover transition-colors shadow-lg w-full sm:w-auto"
+                    >
+                      Research Apple Now
+                    </button>
+                    <Link
+                      to="/signup"
+                      className="bg-white text-finto-dark font-bold px-8 py-3.5 rounded-full hover:bg-gray-50 transition-colors shadow-lg w-full sm:w-auto text-center"
+                    >
+                      Create Free Account
+                    </Link>
+                  </div>
                 </div>
-              </div>
+              </section>
+
             </motion.div>
           )}
 
-          {/* ── LOADING ── */}
+          {/* ══════════════════════════════════════════
+              LOADING STATE
+          ══════════════════════════════════════════ */}
           {status === "loading" && (
-            <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ padding: "32px 0" }}>
-              <div style={{ maxWidth: 760, margin: "0 auto 24px", padding: "0 24px" }}><SearchBar compact /></div>
-              <AgentProgress />
+            <motion.div
+              key="loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="py-12 bg-finto-bg flex-1"
+            >
+              <div className="max-w-[800px] mx-auto mb-8 px-6">
+                <SearchBar compact />
+              </div>
+              <div className="max-w-[800px] mx-auto px-6">
+                <AgentProgress />
+              </div>
             </motion.div>
           )}
 
-          {/* ── COMPLETE ── */}
+          {/* ══════════════════════════════════════════
+              COMPLETE STATE
+          ══════════════════════════════════════════ */}
           {status === "complete" && report && (
-            <motion.div key="complete" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ padding: "32px 0" }}>
-              <div className="no-print" style={{ maxWidth: 760, margin: "0 auto 24px", padding: "0 24px" }}><SearchBar compact /></div>
-              <div className="no-print"><AgentProgress /></div>
-              
-              <div id="pdf-report-container" style={{ background: "#E2E2E2", paddingTop: 16, paddingBottom: 16, display: "flex", justifyContent: "center" }}>
-                <div id="pdf-report-content" style={{ width: "100%", maxWidth: 1100, margin: "0 auto", background: "#FFFFFF", padding: "24px", boxSizing: "border-box" }}>
-                  <VerdictCard report={report} />
-                  <KeyInsightsPanel financialData={report.financialData} sentimentScore={report.sentimentScore} riskFactors={report.riskFactors} positiveFactors={report.positiveFactors} />
-                  <div style={{ width: "100%", maxWidth: 1100, margin: "0 auto", padding: "0", display: "grid", gridTemplateColumns: "1fr 320px", gap: 24, boxSizing: "border-box" }}>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                      {(report.reportSections ?? []).map((s, i) => <ReportSection key={s.id} section={s} index={i} />)}
+            <motion.div
+              key="complete"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="py-12 bg-finto-bg flex-1"
+            >
+              <div className="max-w-[1200px] mx-auto mb-8 px-6 no-print">
+                <SearchBar compact />
+              </div>
+              <div className="max-w-[1200px] mx-auto px-6 mb-8 no-print">
+                <AgentProgress />
+              </div>
+
+              <div id="pdf-report-container" className="max-w-[1200px] mx-auto px-6">
+                <div
+                  id="pdf-report-content"
+                  className="flex flex-col lg:flex-row gap-6"
+                >
+                  <div className="flex-1 flex flex-col gap-6 lg:max-w-[800px]">
+                    <VerdictCard report={report} />
+                    <KeyInsightsPanel
+                      financialData={report.financialData}
+                      sentimentScore={report.sentimentScore}
+                      riskFactors={report.riskFactors}
+                      positiveFactors={report.positiveFactors}
+                    />
+                    {(report.reportSections ?? []).map((s, i) => (
+                      <ReportSection key={s.id} section={s} index={i} />
+                    ))}
+                  </div>
+
+                  <div className="w-full lg:w-[320px] flex-shrink-0 print:hidden">
+                    <div className="sticky top-24">
+                      <ResearchSidebar
+                        report={report}
+                        streamEvents={state.streamEvents}
+                      />
                     </div>
-                    <div><ResearchSidebar report={report} streamEvents={state.streamEvents} /></div>
                   </div>
                 </div>
               </div>
 
-              <div className="no-print" style={{ marginTop: 32 }}><ReasoningTrace /></div>
+              <div className="max-w-[1200px] mx-auto px-6 mt-12 no-print">
+                <ReasoningTrace />
+              </div>
             </motion.div>
           )}
 
-          {/* ── ERROR ── */}
+          {/* ══════════════════════════════════════════
+              ERROR STATE
+          ══════════════════════════════════════════ */}
           {status === "error" && (
-            <motion.div key="error" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 80px)", padding: 40 }}>
-              <div style={{ maxWidth: 480, width: "100%", ...card, borderLeft: "4px solid #9B2C2C", padding: 40, textAlign: "center" }}>
-                <AlertCircle style={{ width: 40, height: 40, color: "#9B2C2C", margin: "0 auto 16px" }} />
-                <h2 style={{ ...serif(22, "#2C2C2C"), marginBottom: 8 }}>Research Failed</h2>
-                <p style={{ ...sans(14, "#9B2C2C"), marginBottom: 24, lineHeight: 1.6 }}>{state.error}</p>
-                <button onClick={reset} className="corp-btn-primary" style={{ width: "100%" }}>Try Again</button>
+            <motion.div
+              key="error"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex items-center justify-center flex-1 py-20 px-6"
+            >
+              <div className="max-w-md w-full bg-white border border-red-100 rounded-3xl p-10 text-center shadow-lg relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-2 bg-red-500" />
+                <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-6" />
+                <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                  Research Failed
+                </h2>
+                <p className="text-gray-500 mb-8">{state.error}</p>
+                <button
+                  onClick={reset}
+                  className="w-full bg-red-50 text-red-600 font-bold px-6 py-3 rounded-xl hover:bg-red-100 transition-colors"
+                >
+                  Try Again
+                </button>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </main>
 
-      {/* Footer */}
-      <footer style={{ background: "#4E5944", borderTop: "1px solid rgba(255,255,255,0.18)", boxShadow: "0 -10px 24px rgba(0,0,0,0.06)" }}>
-        <div style={{ ...W, display: "flex", alignItems: "center", justifyContent: "space-between", minHeight: 72, padding: "18px 0" }}>
-          <span style={{ ...serif(16, "#fff"), letterSpacing: "0.12em" }}>ARIA</span>
-          <span style={{ ...sans(12, "rgba(255,255,255,0.75)"), letterSpacing: "0.06em", maxWidth: 600, textAlign: "right" }}>AI-Powered Investment Research · For informational purposes only</span>
+      {/* ── FOOTER ── */}
+      <footer className="bg-white border-t border-gray-100 py-12 px-6">
+        <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row justify-between gap-8">
+          {/* Brand */}
+          <div className="flex flex-col gap-3 max-w-xs">
+            <div
+              className="flex items-center gap-2.5 cursor-pointer"
+              onClick={reset}
+            >
+              <div className="w-6 h-6 rounded-full bg-finto-text flex items-center justify-center">
+                <TrendingUp className="w-3 h-3 text-white" />
+              </div>
+              <span className="font-extrabold text-lg">ARIA</span>
+            </div>
+            <p className="text-sm text-gray-400 leading-relaxed">
+              AI Research Intelligence Agent — institutional-grade stock analysis for everyone. For informational purposes only; not financial advice.
+            </p>
+          </div>
+
+          {/* Links */}
+          <div className="flex gap-12 flex-wrap">
+            <div>
+              <h4 className="font-bold mb-4 text-sm">Platform</h4>
+              <div className="flex flex-col gap-3 text-sm text-gray-500">
+                <Link to="/" className="hover:text-finto-text transition-colors">Home</Link>
+                <Link to="/watchlist" className="hover:text-finto-text transition-colors">Watchlist</Link>
+                <Link to="/settings" className="hover:text-finto-text transition-colors">Settings</Link>
+              </div>
+            </div>
+            <div>
+              <h4 className="font-bold mb-4 text-sm">Account</h4>
+              <div className="flex flex-col gap-3 text-sm text-gray-500">
+                <Link to="/login" className="hover:text-finto-text transition-colors">Sign In</Link>
+                <Link to="/signup" className="hover:text-finto-text transition-colors">Sign Up Free</Link>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-[1200px] mx-auto mt-10 pt-8 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-400">
+          <p>© {new Date().getFullYear()} ARIA. All rights reserved.</p>
+          <p className="text-xs">Not financial advice. Always do your own due diligence.</p>
         </div>
       </footer>
     </div>

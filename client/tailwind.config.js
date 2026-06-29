@@ -5,18 +5,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        /* Corporate palette */
-        corp: {
-          olive:    "#4E5944",
-          "olive-dark": "#3a4333",
-          "olive-light": "#6a7560",
-          bg:       "#E2E2E2",
-          surface:  "#FFFFFF",
-          raised:   "#F5F5F5",
-          border:   "#C8C8C8",
-          text:     "#2C2C2C",
-          muted:    "#6B6B6B",
-          divider:  "#D0D0D0",
+        /* Finto theme palette — nested (used as finto-primary, finto-dark, etc.) */
+        finto: {
+          primary:       "#96e761",
+          "primary-hover": "#80d64a",
+          dark:          "#1e3717",
+          surface:       "#ffffff",
+          "surface-alt": "#fafafa",
+          border:        "#e5e7eb",
+          text:          "#111827",
+          muted:         "#6b7280",
+
+          /* Flat aliases so bg-finto-bg / bg-finto-primary / text-finto-text etc. all resolve */
+          bg:            "#fafafa",   /* alias for surface-alt */
         },
         /* Keep terminal tokens for any residual refs */
         terminal: {
@@ -27,13 +28,13 @@ export default {
         },
       },
       fontFamily: {
+        sans:  ["Inter", "Arial", "Helvetica Neue", "Helvetica", "sans-serif"],
         serif: ["Times New Roman", "Times", "Georgia", "serif"],
-        sans:  ["Arial", "Helvetica Neue", "Helvetica", "sans-serif"],
         mono:  ["Courier New", "Courier", "monospace"],
       },
       boxShadow: {
-        corp:      "0 2px 8px rgba(0,0,0,0.10), 0 1px 3px rgba(0,0,0,0.06)",
-        "corp-md": "0 4px 16px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.08)",
+        finto: "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)",
+        "finto-lg": "0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03)",
         "glow-blue":  "0 0 20px rgba(59, 130, 246, 0.3)",
         "glow-green": "0 0 20px rgba(16, 185, 129, 0.3)",
         "glow-red":   "0 0 20px rgba(239, 68, 68, 0.3)",
